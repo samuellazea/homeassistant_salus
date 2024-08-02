@@ -82,19 +82,12 @@ async def async_setup_gateway_entry(hass: core.HomeAssistant, entry: config_entr
 
 async def async_unload_entry(hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry) -> bool:
     """Unload a config entry."""
-    platforms = get_platforms(config_entry)
 
     unload_ok = await hass.config_entries.async_unload_platforms(
-        config_entry, platforms
+        config_entry, GATEWAY_PLATFORMS
     )
 
     if unload_ok:
         hass.data[DOMAIN].pop(config_entry.entry_id)
 
     return unload_ok
-
-
-async def update_listener(hass: core.HomeAssistant, config_entry: config_entries.ConfigEntry) -> None:
-    """Handle options update."""
-    await hass.config_entries.async_reload(config_entry.entry_id)
-
