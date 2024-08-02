@@ -76,9 +76,6 @@ async def async_setup_gateway_entry(hass: core.HomeAssistant, entry: config_entr
         sw_version=gateway_info.sw_version,
     )
 
-    for component in GATEWAY_PLATFORMS:
-        hass.async_create_task(
-            hass.config_entries.async_forward_entry_setup(entry, component)
-        )
+    await hass.config_entries.async_forward_entry_setups(entry, GATEWAY_PLATFORMS)
 
     return True
