@@ -7,12 +7,7 @@ import voluptuous as vol
 from homeassistant.components.climate import PLATFORM_SCHEMA, ClimateEntity
 from homeassistant.components.climate.const import (
     HVACMode,
-    ClimateEntityFeature,
-    FAN_OFF,
-    FAN_AUTO,
-    FAN_LOW,
-    FAN_MEDIUM,
-    FAN_HIGH
+    ClimateEntityFeature
 )
 from homeassistant.const import (
     ATTR_TEMPERATURE,
@@ -98,7 +93,7 @@ class SalusThermostat(ClimateEntity):
         # definetly needs a better approach
         # return self._coordinator.data.get(self._idx).supported_features
 
-        supported_features = ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF | ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE
+        supported_features = ClimateEntityFeature.TURN_ON | ClimateEntityFeature.TURN_OFF | ClimateEntityFeature.TARGET_TEMPERATURE | ClimateEntityFeature.PRESET_MODE | ClimateEntityFeature.FAN_MODE
         return supported_features
 
     @property
@@ -216,13 +211,13 @@ class SalusThermostat(ClimateEntity):
 
     async def async_set_fan_mode(self, fan_mode):
         """Set fan speed (auto, low, medium, high, off)."""
-        if fan_mode == FAN_OFF:
+        if fan_mode == HVACMode.FAN_OFF:
             mode = "Off"
-        elif fan_mode == FAN_LOW:
+        elif fan_mode == HVACMode.FAN_LOW:
             mode = "Low"
-        elif fan_mode == FAN_MEDIUM:
+        elif fan_mode == HVACMode.FAN_MEDIUM:
             mode = "Medium"
-        elif fan_mode == FAN_HIGH:
+        elif fan_mode == HVACMode.FAN_HIGH:
             mode = "High"
         else:
             mode = "Auto"
