@@ -7,7 +7,7 @@
   "requirements": ["pyit600==0.5.1"],
   "dependencies": [],
   "codeowners": [
-    "@leonardpitzu"
+    "@samuellazea"
   ],
   "version": "0.5.3"
 }
