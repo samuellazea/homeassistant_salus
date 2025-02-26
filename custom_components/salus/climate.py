@@ -36,6 +36,7 @@ PLATFORM_SCHEMA = PLATFORM_SCHEMA.extend(
 
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Set up Salus thermostats from a config entry."""
+    _LOGGER.debug("Setting up Salus thermostats from config entry: %s", config_entry.entry_id)
 
     gateway = hass.data[DOMAIN][config_entry.entry_id]
 
@@ -61,6 +62,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     # Fetch initial data so we have data when entities subscribe
     await coordinator.async_refresh()
+    _LOGGER.debug("Initial data fetch complete")
 
     async_add_entities(SalusThermostat(coordinator, idx, gateway) for idx
                        in coordinator.data)
@@ -79,19 +81,22 @@ class SalusThermostat(ClimateEntity):
         self._coordinator = coordinator
         self._idx = idx
         self._gateway = gateway
+        _LOGGER.debug("Initializing SalusThermostat with ID: %s", idx)
 
     async def async_update(self):
         """Update the entity.
         Only used by the generic entity update service.
         """
+        _LOGGER.debug("Requesting update for thermostat %s", self._idx)
         await self._coordinator.async_request_refresh()
 
     async def async_added_to_hass(self):
         """When entity is added to hass."""
+        _LOGGER.debug("Thermostat %s added to Home Assistant", self._idx)
         self.async_on_remove(
             self._coordinator.async_add_listener(self.async_write_ha_state)
         )
-    
+
     @property
     def supported_features(self):
         """Return the list of supported features."""
@@ -238,10 +243,12 @@ class SalusThermostat(ClimateEntity):
             mode = "cool"
         else:
             mode = "auto"
+        _LOGGER.debug("Setting HVAC mode for thermostat %s to %s", self._idx, mode)
         await self._gateway.set_climate_device_mode(self._idx, mode)
         await self._coordinator.async_request_refresh()
 
     async def async_set_preset_mode(self, preset_mode):
         """Set preset mode (Off, Permanent Hold, Eco, Temporary Hold, Follow Schedule)"""
+        _LOGGER.debug("Setting preset mode for thermostat %s to %s", self._idx, preset_mode)
         await self._gateway.set_climate_device_preset(self._idx, preset_mode)
         await self._coordinator.async_request_refresh()

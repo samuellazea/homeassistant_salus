@@ -38,10 +38,15 @@ class SalusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
             token = user_input[CONF_TOKEN]
             host = user_input[CONF_HOST]
 
+            _LOGGER.debug("Attempting connection with Salus Gateway")
+            _LOGGER.debug("Provided host: %s", host)
+            _LOGGER.debug("Provided token (EUID): %s", token)
+
             # Try to connect to a Salus Gateway.
             gateway = IT600Gateway(host=host, euid=token)
             try:
                 unique_id = await gateway.connect()
+                _LOGGER.debug("Successfully connected to gateway with unique ID: %s", unique_id)
                 await self.async_set_unique_id(unique_id)
                 self._abort_if_unique_id_configured()
                 return self.async_create_entry(
@@ -54,8 +59,10 @@ class SalusFlowHandler(config_entries.ConfigFlow, domain=DOMAIN):
                     },
                 )
             except IT600ConnectionError:
+                _LOGGER.error("Failed to connect to Salus Gateway at %s", host)
                 errors["base"] = "connect_error"
             except IT600AuthenticationError:
+                _LOGGER.error("Authentication error with Salus Gateway. Check token (EUID): %s", token)
                 errors["base"] = "auth_error"
 
         schema = vol.Schema(GATEWAY_SETTINGS)

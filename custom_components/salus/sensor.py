@@ -38,9 +38,12 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         This is the place to pre-process the data to lookup tables
         so entities can quickly look up their data.
         """
+        _LOGGER.debug("Fetching sensor data from gateway")
         async with async_timeout.timeout(10):
             await gateway.poll_status()
-            return gateway.get_sensor_devices()
+            data = gateway.get_sensor_devices()
+            _LOGGER.debug("Received sensor data: %s", data)
+            return data
 
     coordinator = DataUpdateCoordinator(
         hass,
@@ -54,6 +57,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
 
     # Fetch initial data so we have data when entities subscribe
     await coordinator.async_refresh()
+    _LOGGER.debug("Coordinator initialized with data: %s", coordinator.data)
 
     async_add_entities(SalusSensor(coordinator, idx, gateway) for idx
                        in coordinator.data)
@@ -72,38 +76,47 @@ class SalusSensor(Entity):
         self._coordinator = coordinator
         self._idx = idx
         self._gateway = gateway
+        _LOGGER.debug("Initializing sensor with ID: %s", idx)
 
     async def async_update(self):
         """Update the entity.
         Only used by the generic entity update service.
         """
+        _LOGGER.debug("Requesting async update for sensor ID: %s", self._idx)
         await self._coordinator.async_request_refresh()
 
     async def async_added_to_hass(self):
         """When entity is added to hass."""
+        _LOGGER.debug("Sensor ID %s added to Home Assistant", self._idx)
         self.async_on_remove(
             self._coordinator.async_add_listener(self.async_write_ha_state)
         )
 
     def available(self):
         """Return if entity is available."""
-        return self._coordinator.data.get(self._idx).available
+        available = self._coordinator.data.get(self._idx).available
+        _LOGGER.debug("Sensor ID %s availability: %s", self._idx, available)
+        return available
 
     @property
     def device_info(self):
         """Return the device info."""
-        return {
+        info = {
             "name": self._coordinator.data.get(self._idx).name,
             "identifiers": {("salus", self._coordinator.data.get(self._idx).unique_id)},
             "manufacturer": self._coordinator.data.get(self._idx).manufacturer,
             "model": self._coordinator.data.get(self._idx).model,
             "sw_version": self._coordinator.data.get(self._idx).sw_version
         }
+        _LOGGER.debug("Device info for sensor ID %s: %s", self._idx, info)
+        return info
 
     @property
     def unique_id(self):
         """Return the unique id."""
-        return self._coordinator.data.get(self._idx).unique_id
+        uid = self._coordinator.data.get(self._idx).unique_id
+        _LOGGER.debug("Unique ID for sensor ID %s: %s", self._idx, uid)
+        return uid
 
     @property
     def should_poll(self):
@@ -113,19 +126,27 @@ class SalusSensor(Entity):
     @property
     def name(self):
         """Return the name of the sensor."""
-        return self._coordinator.data.get(self._idx).name
+        name = self._coordinator.data.get(self._idx).name
+        _LOGGER.debug("Name for sensor ID %s: %s", self._idx, name)
+        return name
 
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self._coordinator.data.get(self._idx).state
+        state = self._coordinator.data.get(self._idx).state
+        _LOGGER.debug("State for sensor ID %s: %s", self._idx, state)
+        return state
 
     @property
     def unit_of_measurement(self):
         """Return the unit of measurement of this entity, if any."""
-        return self._coordinator.data.get(self._idx).unit_of_measurement
+        unit = self._coordinator.data.get(self._idx).unit_of_measurement
+        _LOGGER.debug("Unit of measurement for sensor ID %s: %s", self._idx, unit)
+        return unit
 
     @property
     def device_class(self):
         """Return the device class of the sensor."""
-        return self._coordinator.data.get(self._idx).device_class
+        device_class = self._coordinator.data.get(self._idx).device_class
+        _LOGGER.debug("Device class for sensor ID %s: %s", self._idx, device_class)
+        return device_class
